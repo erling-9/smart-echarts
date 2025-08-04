@@ -1,7 +1,7 @@
 {
   "name": "smart-echarts-server",
   "version": "1.0.0",
-  "description": "智能图表推荐后端服务",
+  "description": "智能交互式图表推荐后端服务 - 支持ECharts交互式图表配置生成",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

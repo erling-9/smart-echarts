@@ -78,7 +78,7 @@ function readCSVFile(filePath) {
 async function analyzeDataAndRecommendCharts(data) {
   try {
     const prompt = `
-作为数据可视化专家，请分析以下数据并推荐最适合的图表类型：
+作为数据可视化专家，请分析以下数据并推荐最适合的交互式图表类型：
 
 完整数据（${data.length}行）：
 ${JSON.stringify(data, null, 2)}
@@ -89,15 +89,15 @@ ${JSON.stringify(data, null, 2)}
 - 列名: ${data[0] ? Object.keys(data[0]).join(', ') : '无'}
 - 数据范围: 从 ${data[0]?.[Object.keys(data[0])[0]]} 到 ${data[data.length-1]?.[Object.keys(data[0])[0]]}
 
-请从以下图表类型中选择最适合的3-5种：
-- line: 折线图（适合趋势变化）
-- bar: 柱状图（适合类别比较）
-- pie: 饼图（适合占比分析）
-- scatter: 散点图（适合相关性分析）
-- radar: 雷达图（适合多维度对比）
-- heatmap: 热力图（适合密度分布）
-- funnel: 漏斗图（适合流程转化）
-- gauge: 仪表盘（适合单一指标）
+请从以下交互式图表类型中选择最适合的3-5种，考虑用户交互体验：
+- line: 交互式折线图（适合趋势变化，支持缩放、悬停、点击）
+- bar: 交互式柱状图（适合类别比较，支持点击高亮、数据筛选）
+- pie: 交互式饼图（适合占比分析，支持扇区点击、图例交互）
+- scatter: 交互式散点图（适合相关性分析，支持缩放、数据点选择）
+- radar: 交互式雷达图（适合多维度对比，支持指标切换）
+- heatmap: 交互式热力图（适合密度分布，支持颜色映射）
+- funnel: 交互式漏斗图（适合流程转化，支持步骤点击）
+- gauge: 交互式仪表盘（适合单一指标，支持实时更新）
 
 请详细分析数据特征，并给出具体的推荐理由。返回格式：
 {
@@ -368,72 +368,159 @@ function generateLineChartOption(data, title) {
   const series = columns.slice(1).map(col => ({
     name: col,
     type: 'line',
-    data: data.map(row => row[col])
+    data: data.map(row => row[col]),
+    smooth: true,
+    symbol: 'circle',
+    symbolSize: 6
   }));
 
   return {
-    title: { text: title || '折线图' },
-    tooltip: { trigger: 'axis' },
-    legend: { data: columns.slice(1) },
-    xAxis: { type: 'category', data: xAxisData },
+    title: { text: title || '交互式折线图' },
+    tooltip: { 
+      trigger: 'axis',
+      axisPointer: { type: 'cross' }
+    },
+    legend: { 
+      data: columns.slice(1),
+      selectedMode: true
+    },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { 
+      type: 'category', 
+      data: xAxisData,
+      boundaryGap: false
+    },
     yAxis: { type: 'value' },
-    series: series
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { type: 'slider', start: 0, end: 100 }
+    ],
+    series: series,
+    animation: true,
+    animationDuration: 1000,
+    animationEasing: 'cubicOut'
   };
 }
 
-// 生成柱状图配置
+// 生成交互式柱状图配置
 function generateBarChartOption(data, title) {
   const columns = Object.keys(data[0] || {});
   const xAxisData = data.map((row, index) => row[columns[0]] || `数据${index + 1}`);
   const series = columns.slice(1).map(col => ({
     name: col,
     type: 'bar',
-    data: data.map(row => row[col])
+    data: data.map(row => row[col]),
+    itemStyle: {
+      borderRadius: [4, 4, 0, 0]
+    }
   }));
 
   return {
-    title: { text: title || '柱状图' },
-    tooltip: { trigger: 'axis' },
-    legend: { data: columns.slice(1) },
-    xAxis: { type: 'category', data: xAxisData },
+    title: { text: title || '交互式柱状图' },
+    tooltip: { 
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' }
+    },
+    legend: { 
+      data: columns.slice(1),
+      selectedMode: true
+    },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { 
+      type: 'category', 
+      data: xAxisData,
+      axisLabel: { rotate: 45 }
+    },
     yAxis: { type: 'value' },
-    series: series
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { type: 'slider', start: 0, end: 100 }
+    ],
+    series: series,
+    animation: true,
+    animationDuration: 1000,
+    animationEasing: 'cubicOut'
   };
 }
 
-// 生成饼图配置
+// 生成交互式饼图配置
 function generatePieChartOption(data, title) {
   const columns = Object.keys(data[0] || {});
   const series = columns.map(col => ({
     name: col,
     type: 'pie',
-    radius: '50%',
-    data: data.map(row => ({ name: row[columns[0]], value: row[col] }))
+    radius: ['40%', '70%'],
+    center: ['50%', '50%'],
+    data: data.map(row => ({ name: row[columns[0]], value: row[col] })),
+    emphasis: {
+      itemStyle: {
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowColor: 'rgba(0, 0, 0, 0.5)'
+      }
+    }
   }));
 
   return {
-    title: { text: title || '饼图' },
-    tooltip: { trigger: 'item' },
-    legend: { orient: 'vertical', left: 'left' },
-    series: series
+    title: { text: title || '交互式饼图' },
+    tooltip: { 
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)'
+    },
+    legend: { 
+      orient: 'vertical', 
+      left: 'left',
+      selectedMode: true
+    },
+    series: series,
+    animation: true,
+    animationDuration: 1000,
+    animationEasing: 'cubicOut'
   };
 }
 
-// 生成散点图配置
+// 生成交互式散点图配置
 function generateScatterChartOption(data, title) {
   const columns = Object.keys(data[0] || {});
   if (columns.length < 2) return generateBarChartOption(data, title);
   
   return {
-    title: { text: title || '散点图' },
-    tooltip: { trigger: 'item' },
-    xAxis: { type: 'value' },
-    yAxis: { type: 'value' },
+    title: { text: title || '交互式散点图' },
+    tooltip: { 
+      trigger: 'item',
+      formatter: function(params) {
+        return `${params.seriesName}<br/>${columns[0]}: ${params.value[0]}<br/>${columns[1]}: ${params.value[1]}`;
+      }
+    },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { 
+      type: 'value',
+      name: columns[0],
+      nameLocation: 'middle',
+      nameGap: 30
+    },
+    yAxis: { 
+      type: 'value',
+      name: columns[1],
+      nameLocation: 'middle',
+      nameGap: 30
+    },
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { type: 'slider', start: 0, end: 100 }
+    ],
     series: [{
       name: '散点',
       type: 'scatter',
-      data: data.map(row => [row[columns[0]], row[columns[1]]])
-    }]
+      data: data.map(row => [row[columns[0]], row[columns[1]]]),
+      symbolSize: 8,
+      itemStyle: {
+        opacity: 0.8
+      }
+    }],
+    animation: true,
+    animationDuration: 1000,
+    animationEasing: 'cubicOut'
   };
 }
 

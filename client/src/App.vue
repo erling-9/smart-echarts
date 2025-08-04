@@ -2,8 +2,8 @@
   <div id="app">
     <el-container>
       <el-header>
-        <h1>智能图表推荐系统</h1>
-        <p>上传Excel或CSV文件，AI自动推荐最适合的图表类型</p>
+        <h1>智能交互式图表推荐系统</h1>
+        <p>上传Excel或CSV文件，AI自动推荐最适合的交互式ECharts图表类型</p>
       </el-header>
       
       <el-main>
@@ -32,7 +32,7 @@
                 </div>
                 <template #tip>
                   <div class="el-upload__tip">
-                    支持 Excel (.xlsx, .xls) 和 CSV 文件
+                    支持 Excel (.xlsx, .xls) 和 CSV 文件，将生成交互式ECharts图表
                   </div>
                 </template>
               </el-upload>
@@ -70,7 +70,7 @@
             <el-card>
               <template #header>
                 <div class="card-header">
-                  <span>图表推荐</span>
+                  <span>交互式图表推荐</span>
                 </div>
               </template>
               
@@ -92,7 +92,7 @@
                       size="small"
                       @click.stop="generateChart(recommendation.chartType)"
                     >
-                      生成图表
+                      生成交互式图表
                     </el-button>
                   </el-card>
                 </el-col>
@@ -106,7 +106,7 @@
             <el-card>
               <template #header>
                 <div class="card-header">
-                  <span>图表展示</span>
+                  <span>交互式图表展示</span>
                   <el-input 
                     v-model="chartTitle" 
                     placeholder="输入图表标题"
@@ -117,6 +117,9 @@
               </template>
               
               <div class="chart-container">
+                <div class="chart-tips">
+                  <p>💡 交互提示：支持鼠标滚轮缩放、拖拽平移、悬停查看详情、点击图例切换显示</p>
+                </div>
                 <v-chart 
                   :option="chartOption" 
                   :style="{ height: '500px' }"
@@ -204,14 +207,14 @@ export default {
 
     const getChartTypeName = (chartType) => {
       const names = {
-        'line': '折线图',
-        'bar': '柱状图',
-        'pie': '饼图',
-        'scatter': '散点图',
-        'radar': '雷达图',
-        'heatmap': '热力图',
-        'funnel': '漏斗图',
-        'gauge': '仪表盘'
+        'line': '交互式折线图',
+        'bar': '交互式柱状图',
+        'pie': '交互式饼图',
+        'scatter': '交互式散点图',
+        'radar': '交互式雷达图',
+        'heatmap': '交互式热力图',
+        'funnel': '交互式漏斗图',
+        'gauge': '交互式仪表盘'
       }
       return names[chartType] || chartType
     }
@@ -225,13 +228,47 @@ export default {
         })
         
         if (response.data.success) {
-          chartOption.value = response.data.option
+          // 增强交互式配置
+          const option = response.data.option
+          
+          // 添加交互式工具提示
+          if (!option.tooltip) {
+            option.tooltip = {
+              trigger: 'axis',
+              axisPointer: {
+                type: 'cross'
+              }
+            }
+          }
+          
+          // 添加缩放功能
+          if (!option.dataZoom) {
+            option.dataZoom = [
+              {
+                type: 'inside',
+                start: 0,
+                end: 100
+              },
+              {
+                type: 'slider',
+                start: 0,
+                end: 100
+              }
+            ]
+          }
+          
+          // 添加动画效果
+          option.animation = true
+          option.animationDuration = 1000
+          option.animationEasing = 'cubicOut'
+          
+          chartOption.value = option
           selectedChartType.value = chartType
-          ElMessage.success('图表生成成功！')
+          ElMessage.success('交互式图表生成成功！支持缩放、平移、悬停等交互功能')
         }
       } catch (error) {
         console.error('生成图表错误:', error)
-        ElMessage.error('生成图表失败')
+        ElMessage.error('生成交互式图表失败')
       }
     }
 
@@ -335,7 +372,24 @@ export default {
 .chart-container {
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-tips {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-tips p {
+  margin: 0;
+  opacity: 0.9;
 }
 
 .el-upload__tip {

@@ -1,7 +1,7 @@
 {
   "name": "smart-echarts",
   "version": "1.0.0",
-  "description": "智能图表推荐和可视化系统",
+  "description": "智能交互式图表推荐和可视化系统 - 基于ECharts的交互式图表生成",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
@@ -10,7 +10,7 @@
     "build": "cd client && npm run build",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
-  "keywords": ["vue", "echarts", "excel", "csv", "ai", "visualization"],
+  "keywords": ["vue", "echarts", "interactive", "excel", "csv", "ai", "visualization", "chart"],
   "author": "",
   "license": "MIT",
   "devDependencies": {

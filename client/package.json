@@ -1,7 +1,7 @@
 {
   "name": "smart-echarts-client",
   "version": "1.0.0",
-  "description": "智能图表推荐前端应用",
+  "description": "智能交互式图表推荐前端应用 - 基于Vue-ECharts的交互式图表展示",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
